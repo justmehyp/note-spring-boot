@@ -4,8 +4,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-@One
-public @interface Two {
-
-    String two() default "2";
+@Four
+public @interface Five {
+    String f() default "5";
 }

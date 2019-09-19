@@ -6,11 +6,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Two
-public @interface Three {
+@Three
+public @interface Four {
 
-    String one() default "3";
+    @AliasFor(value = "two", annotation = Two.class)
+    String four() default "4";
 
-    @AliasFor(value = "one", annotation = One.class)
-    String three() default "3";
+    @AliasFor(value = "two", annotation = Two.class)
+    String f() default "4";
 }
