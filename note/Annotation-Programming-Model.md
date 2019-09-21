@@ -26,7 +26,7 @@
 class Home { }
 ```
   
-  注解层级结果：
+  注解层级结构：
 ```text
 @Parent
     @Child
@@ -110,7 +110,7 @@ then A is an explicit override for B.
 annotation @Two and B is an explicit override for attribute C in annotation @Three, then A is a transitive explicit 
 override for C following the law of transitivity.
 
-属性别名，有 3 种， 分别是 显式别名，隐式别名 和 传递隐式别名, 「属性别名」 只能发生在一个注解内部。比如：  
+属性别名，有 3 种， 分别是 显式别名，隐式别名 和 传递隐式别名, 「属性别名」 只能发生在同一个注解内部。比如：  
 
 显式别名(互相@AliasFor)，@A.a1 和 @A.a2， 
 ```java
@@ -240,8 +240,63 @@ override for C following the law of transitivity.
 对于「显式传递重写」，像上面 "@A.a1 被 @B.a1 隐式重写， @B.a1 被 @C.c 显式重写"，或者 "@A.a2 被 @B.b 显式重写， B.b 被 @C.b 隐式重写"， 重写关系是不会传递的。
 
 ## 总结
-属性别名，有 3 种， 分别是 显式别名，隐式别名 和 传递隐式别名, 「属性别名」 只能发生在一个注解内部。
+属性别名，有 3 种， 分别是 显式别名，隐式别名 和 传递隐式别名, 「属性别名」 只能发生在同一个注解内部。
 属性重写，也有 3 种，分别是 隐式重写，显式重写 和 传递显式重写，「属性重写」只能发生在注解之间。
 
 ## 后记
-Spring 对于注解编程模型的代码实现，主要在 AnnotatedElementUtils 这个类中，做试验可以使用这个方法：AnnotatedElementUtils#getMergedAnnotationAttributes。
+Spring 对于注解编程模型的代码实现，主要在 AnnotatedElementUtils 这个类中，做试验可以使用这个方法：AnnotatedElementUtils#getMergedAnnotationAttributes。  
+
+需要注意的是，「隐式重写」不适用于 value 属性，貌似 value 属性是一个相对特殊的属性。
+
+以下示例， @B.value 不会 隐式重写 @A.value
+```java
+@interface A {
+    String value() default "a";
+}
+
+@A
+@interface B {
+    String value() default "b";
+}
+```
+
+但只要属性名不是 value，都可以 隐式重写 , @B.xxx 隐式重写 @A.xxx
+```java
+@interface A {
+    String xxx() default "a";
+}
+
+@A
+@interface B {
+    String xxx() default "b";
+}
+```
+
+我跟了以下源码，发现源码中确实对 value 属性做了特殊判断，代码位置在 
+`org.springframework.core.annotation.AnnotatedElementUtils.MergedAnnotationAttributesProcessor#postProcess` 方法中，代码片段如下；
+```text
+    // Implicit annotation attribute override based on convention
+    else if (!AnnotationUtils.VALUE.equals(attributeName) && attributes.containsKey(attributeName)) {
+        overrideAttribute(element, annotation, attributes, attributeName, attributeName);
+    }
+```
+其中，AnnotationUtils.VALUE 是一个常量，其值为 "value"。暂时没有找到官方说明为什么要对 value 属性做特殊处理。猜测是很多注解只有一个属性，
+为了编程方便，因为不需要 @A(value = "hello world) 这样使用， 只需要 @A("hello world") 即可。这种情况下，如果隐式重写，可能不是编码者想要的结果。
+
+值得一提的是，显式重写 没有这种特殊处理，以下示例 @B.value 会显式重写 @A.value:
+```java
+@interface A {
+
+    String value() default "a";
+}
+
+@A
+@interface B {
+
+    @AliasFor(annotation = A.class)
+    String value() default "b";
+}
+```
+
+本文讨论所涉及的 Spring Boot 版本 >= 2.0.2.RELEASE。
+ 
