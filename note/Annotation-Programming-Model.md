@@ -3,7 +3,7 @@
 
 ## 什么是元注解
   所谓元注解，即标注在注解上的注解。这种方式所形成的注解层级结构中，元注解在层级结构的上面，我叫它父注解(Super Annotation)，
-被注解的注解在层级结构的下面，叫它子注解(Sub Annotation）。引入元注解的目的是为了实现属性重写(Attribute Override) 的目的。
+被注解的注解在层级结构的下面，叫它子注解(Sub Annotation）。引入元注解的目的是为了实现属性覆盖(Attribute Override) 的目的。
 
   举个简单的例子：  
   有 一个类 Home 和 2 个注解，1 个叫 @Parent，另一个叫 @Child ，@Parent 标注在 @Child 上，@Child 标注在 Home 上，它们都只有一个属性，叫 name，
@@ -32,7 +32,7 @@ class Home { }
     @Child
 ```
 
-  相对于「属性重写」，还有另一个概念是「属性别名」(Alias)，属性别名之间是互相等价的。  
+  相对于「属性覆盖」，还有另一个概念是「属性别名」(Alias)，属性别名之间是互相等价的。  
   我们给上面的 @Child 加一个属性 value，并且使用 @AliasFor ，使 @Child.name 和 @Child.value 互相成为别名，并且默认值为空字符串：
 ```java
 @interface Child {
@@ -50,8 +50,8 @@ class Home { }
 ```
   这时，无论是获取 @Child.name 还是获取 @Child.value，其结果总是相同的，都是 "Jack"。说明了属性别名之间的等价性。
 
-## 属性别名 和 属性重写
-属性别名 和 属性重写 其实是两个完全不同的概念，但是如果不加区分，模糊概念的话，就会对一些现象不符合预期而感到意外。
+## 属性别名 和 属性覆盖
+属性别名 和 属性覆盖 其实是两个完全不同的概念，但是如果不加区分，模糊概念的话，就会对一些现象不符合预期而感到意外。
 考虑以下案例，分别给出 @A.a1、@A.a2、@B.a1、@B.b、@C.c、@C.b 的值：
 ```java
 @interface A {
@@ -78,11 +78,11 @@ class Home { }
 
 在我没有弄清概念之前，我觉得答案应该是：@A.a1、@A.a2、@B.a1、@B.b、@C.c、@C.b 全都是 "3"。  
 理由如下：  
-- @C.c 是 @B.a1 的别名，@B.a1 重写 @A.a1 ，所以这 3 者是一条链上的，它们的值应该相等, 是 "3"。
-- @C.b 重写 @B.b，@B.b 是 @A.a2 的别名，所以这 3 者 也是一条链上的，它们的值也应该相等，是 "3"。  
+- @C.c 是 @B.a1 的别名，@B.a1 覆盖 @A.a1 ，所以这 3 者是一条链上的，它们的值应该相等, 是 "3"。
+- @C.b 覆盖 @B.b，@B.b 是 @A.a2 的别名，所以这 3 者 也是一条链上的，它们的值也应该相等，是 "3"。  
 
 而结果却是，我错了，@B.a1、@B.b、@C.c、@C.b 的值是 "3"， 但 @A.a1、@A.a2 的值是 "2"。  
-至于为什么，我们先来认真理解一下 属性别名 和 属性重写 这 2 个概念吧。
+至于为什么，我们先来认真理解一下 属性别名 和 属性覆盖 这 2 个概念吧。
 
 援引官方 Wiki `https://github.com/spring-projects/spring-framework/wiki/Spring-Annotation-Programming-Model`,
 其中有关于这两个概念的澄清。在 「Attribute Aliases and Overrides」 一节中，官方原文如下：
@@ -161,9 +161,9 @@ override for C following the law of transitivity.
 }
 ```
 
-属性重写，也有 3 种，分别是 隐式重写，显式重写 和 传递显式重写，「属性重写」只能发生在注解之间。比如：  
+属性覆盖，也有 3 种，分别是 隐式覆盖，显式覆盖 和 传递显式覆盖，「属性覆盖」只能发生在注解之间。比如：  
 
-隐式重写(同名属性)， @B.a 重写 @A.a
+隐式覆盖(同名属性)， @B.a 覆盖 @A.a
 ```java
 @interface A {
     String a() default "";
@@ -175,7 +175,7 @@ override for C following the law of transitivity.
 }
 ```
 
-显式重写(需要@AliasFor)，@B.b 重写 @A.a
+显式覆盖(需要@AliasFor)，@B.b 覆盖 @A.a
 ```java
 @interface A {
     String a() default "";
@@ -188,7 +188,7 @@ override for C following the law of transitivity.
 }
 ```
 
-传递显式重写(需要 @AliasFor)，由于 @C.c 重写  @B.b， @B.b 重写 @A.a， 所以 @C.c 也 重写 @A.a
+传递显式覆盖(需要 @AliasFor)，由于 @C.c 覆盖  @B.b， @B.b 覆盖 @A.a， 所以 @C.c 也 覆盖 @A.a
 ```java
 @interface A {
     String a() default "";
@@ -233,22 +233,22 @@ override for C following the law of transitivity.
 ```
 解答步骤是：
 - 对于注解 @C，@C.c = "3", @C.b = "3"  
-- 对于注解 @B, @B.a1 被 @C.c 显式重写, 所以 @B.a1 = @C.c = "3"； @B.b 被 @C.b 隐式重写，所以 @B.b = @C.b = "3"
-- 对于注解 @A, @A.a1 被 @B.a1 隐式重写，所以 @A.a1 = @B.a1 = "2"; @A.a2 被 @B.b 显式重写，所以 @A.a2 = @B.b = "2"
+- 对于注解 @B, @B.a1 被 @C.c 显式覆盖, 所以 @B.a1 = @C.c = "3"； @B.b 被 @C.b 隐式覆盖，所以 @B.b = @C.b = "3"
+- 对于注解 @A, @A.a1 被 @B.a1 隐式覆盖，所以 @A.a1 = @B.a1 = "2"; @A.a2 被 @B.b 显式覆盖，所以 @A.a2 = @B.b = "2"
 
 可以看到 @A 和 @C 之间没有任何关系。这里也根本没有「属性别名」的存在，不是用了 @AliasFor 就是 「属性别名」的。  
-对于「显式传递重写」，像上面 "@A.a1 被 @B.a1 隐式重写， @B.a1 被 @C.c 显式重写"，或者 "@A.a2 被 @B.b 显式重写， B.b 被 @C.b 隐式重写"， 重写关系是不会传递的。
+对于「显式传递覆盖」，像上面 "@A.a1 被 @B.a1 隐式覆盖， @B.a1 被 @C.c 显式覆盖"，或者 "@A.a2 被 @B.b 显式覆盖， B.b 被 @C.b 隐式覆盖"， 覆盖关系是不会传递的。
 
 ## 总结
 属性别名，有 3 种， 分别是 显式别名，隐式别名 和 传递隐式别名, 「属性别名」 只能发生在同一个注解内部。
-属性重写，也有 3 种，分别是 隐式重写，显式重写 和 传递显式重写，「属性重写」只能发生在注解之间。
+属性覆盖，也有 3 种，分别是 隐式覆盖，显式覆盖 和 传递显式覆盖，「属性覆盖」只能发生在注解之间。
 
 ## 后记
 Spring 对于注解编程模型的代码实现，主要在 AnnotatedElementUtils 这个类中，做试验可以使用这个方法：AnnotatedElementUtils#getMergedAnnotationAttributes。  
 
-需要注意的是，「隐式重写」不适用于 value 属性，貌似 value 属性是一个相对特殊的属性。
+需要注意的是，「隐式覆盖」不适用于 value 属性，貌似 value 属性是一个相对特殊的属性。
 
-以下示例， @B.value 不会 隐式重写 @A.value
+以下示例， @B.value 不会 隐式覆盖 @A.value
 ```java
 @interface A {
     String value() default "a";
@@ -260,7 +260,7 @@ Spring 对于注解编程模型的代码实现，主要在 AnnotatedElementUtils
 }
 ```
 
-但只要属性名不是 value，都可以 隐式重写 , @B.xxx 隐式重写 @A.xxx
+但只要属性名不是 value，都可以 隐式覆盖 , @B.xxx 隐式覆盖 @A.xxx
 ```java
 @interface A {
     String xxx() default "a";
@@ -281,9 +281,9 @@ Spring 对于注解编程模型的代码实现，主要在 AnnotatedElementUtils
     }
 ```
 其中，AnnotationUtils.VALUE 是一个常量，其值为 "value"。暂时没有找到官方说明为什么要对 value 属性做特殊处理。猜测是很多注解只有一个属性，
-为了编程方便，因为不需要 @A(value = "hello world) 这样使用， 只需要 @A("hello world") 即可。这种情况下，如果隐式重写，可能不是编码者想要的结果。
+为了编程方便，因为不需要 @A(value = "hello world) 这样使用， 只需要 @A("hello world") 即可。这种情况下，如果隐式覆盖，可能不是编码者想要的结果。
 
-值得一提的是，显式重写 没有这种特殊处理，以下示例 @B.value 会显式重写 @A.value:
+值得一提的是，显式覆盖 没有这种特殊处理，以下示例 @B.value 会显式覆盖 @A.value:
 ```java
 @interface A {
 
