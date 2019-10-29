@@ -5,11 +5,26 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 
+/**
+ * Re-implement {@link AnnotatedElementUtils#getMergedAnnotationAttributes(AnnotatedElement, Class)} to understand
+ * Spring Annotation Programming.
+ */
 public class AnnotationAttributeUtil {
 
     private static final Object NULL_ATTRIBUTE_VALUE = new Object();
 
+    /**
+     * Get the first annotation of the specified {@code annotationType} within
+     * the annotation hierarchy <em>above</em> the supplied {@code element} and
+     * merge that annotation's attributes with <em>matching</em> attributes from
+     * annotations in lower levels of the annotation hierarchy.
+     *
+     * @param annotatedElement the annotated element
+     * @param annotationType the annotation type to find
+     * @return the merged {@code AnnotationAttributes}, or {@code null} if not found
+     */
     public static Map<String, Object> getMergedAnnotationAttributes(AnnotatedElement annotatedElement,
                                                                     Class<? extends Annotation> annotationType) {
         return getMergedAnnotationAttributes(annotatedElement, null, annotationType);
