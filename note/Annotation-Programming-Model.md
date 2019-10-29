@@ -8,7 +8,9 @@
   举个简单的例子：  
   有 一个类 Home 和 2 个注解，1 个叫 @Parent，另一个叫 @Child ，@Parent 标注在 @Child 上，@Child 标注在 Home 上，它们都只有一个属性，叫 name，
 如果 @Parent.name 的默认值是 'John'，而 @Child.name 的默认值是 'Jack'。  
+
   这时，从 Home 上获取 @Child.name，应该返回 'Jack'，这毫无悬念。  
+  
   那么，如果获取 @Parent.name，应该返回什么呢？根据 Spring 注解的「派生性」，@Child.name override @Parent.name，所以返回结果也是 'Jack'。
 
   上述例子中的类和注解，代码大致如下
@@ -36,6 +38,7 @@ class Home { }
 
 
   相对于「属性覆盖」，还有另一个概念是「属性别名」(Alias)，属性别名之间是互相等价的。  
+  
   我们给上面的 @Child 加一个属性 value，并且使用 @AliasFor ，使 @Child.name 和 @Child.value 互相成为别名，并且默认值为空字符串：
 ```java
 @interface Child {
@@ -54,6 +57,7 @@ class Home { }
   这时，无论是获取 @Child.name 还是获取 @Child.value，其结果总是相同的，都是 "Jack"。说明了属性别名之间的等价性。
   
 代码验证： [Sample2](https://github.com/justmehyp/note-spring-boot/blob/master/code/annotation-attribute/src/test/java/example/springframework/sample2/Home.java)
+
 
 ## 属性别名 和 属性覆盖
 属性别名 和 属性覆盖 其实是两个完全不同的概念，但是如果不加区分，模糊概念的话，就会对一些现象不符合预期而感到意外。
