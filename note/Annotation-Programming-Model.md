@@ -2,8 +2,8 @@
   Spring 中有一个概念叫「元注解」(Meta-Annotation)，通过元注解，实现注解的「派生性」，官方的说法是「Annotation Hierarchy」。
 
 ## 什么是元注解
-  所谓元注解，即标注在注解上的注解。这种方式所形成的注解层级结构中，元注解在层级结构的上面，我叫它父注解(Super Annotation)，
-被注解的注解在层级结构的下面，叫它子注解(Sub Annotation）。引入元注解的目的是为了实现属性覆盖(Attribute Override) 的目的。
+  所谓元注解，即标注在注解上的注解。这种方式所形成的注解层级结构中，元注解在层级结构的上面。
+  引入元注解的目的是为了实现属性覆盖(Attribute Override) 的目的。
 
   举个简单的例子：  
   有 一个类 Home 和 2 个注解，1 个叫 @Parent，另一个叫 @Child ，@Parent 标注在 @Child 上，@Child 标注在 Home 上，它们都只有一个属性，叫 name，
@@ -32,6 +32,9 @@ class Home { }
     @Child
 ```
 
+代码验证： [Sample1](https://github.com/justmehyp/note-spring-boot/blob/master/code/annotation-attribute/src/test/java/example/springframework/sample1/Home.java)
+
+
   相对于「属性覆盖」，还有另一个概念是「属性别名」(Alias)，属性别名之间是互相等价的。  
   我们给上面的 @Child 加一个属性 value，并且使用 @AliasFor ，使 @Child.name 和 @Child.value 互相成为别名，并且默认值为空字符串：
 ```java
@@ -49,11 +52,17 @@ class Home { }
 class Home { }
 ```
   这时，无论是获取 @Child.name 还是获取 @Child.value，其结果总是相同的，都是 "Jack"。说明了属性别名之间的等价性。
+  
+代码验证： [Sample2](https://github.com/justmehyp/note-spring-boot/blob/master/code/annotation-attribute/src/test/java/example/springframework/sample2/Home.java)
 
 ## 属性别名 和 属性覆盖
 属性别名 和 属性覆盖 其实是两个完全不同的概念，但是如果不加区分，模糊概念的话，就会对一些现象不符合预期而感到意外。
-考虑以下案例，分别给出 @A.a1、@A.a2、@B.a1、@B.b、@C.c、@C.b 的值：
+考虑以下案例，分别给出从 Sample3 获取到 @A.a1、@A.a2、@B.a1、@B.b、@C.c、@C.b 的值：
 ```java
+
+@C
+class Sample3 { }
+
 @interface A {
     String a1() default "1";
     String a2() default "1";
@@ -238,6 +247,8 @@ override for C following the law of transitivity.
 
 可以看到 @A 和 @C 之间没有任何关系。这里也根本没有「属性别名」的存在，不是用了 @AliasFor 就是 「属性别名」的。  
 对于「显式传递覆盖」，像上面 "@A.a1 被 @B.a1 隐式覆盖， @B.a1 被 @C.c 显式覆盖"，或者 "@A.a2 被 @B.b 显式覆盖， B.b 被 @C.b 隐式覆盖"， 覆盖关系是不会传递的。
+
+代码验证：[Sample3](https://github.com/justmehyp/note-spring-boot/blob/master/code/annotation-attribute/src/test/java/example/springframework/sample3/Sample3.java)
 
 ## 总结
 属性别名，有 3 种， 分别是 显式别名，隐式别名 和 传递隐式别名, 「属性别名」 只能发生在同一个注解内部。
