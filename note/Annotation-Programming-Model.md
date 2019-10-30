@@ -98,30 +98,38 @@ class Sample3 { }
 至于为什么，我们先来认真理解一下 属性别名 和 属性覆盖 这 2 个概念吧。
 
 援引官方 Wiki `https://github.com/spring-projects/spring-framework/wiki/Spring-Annotation-Programming-Model`,
-其中有关于这两个概念的澄清。在 「Attribute Aliases and Overrides」 一节中，官方原文如下：
+其中有关于这两个概念的澄清。在 「Attribute Aliases and Overrides」 一节中，官方原文如下(为了方便理解，我画了图)：
 
 An **attribute alias** is an alias from one annotation attribute to another annotation attribute. 
 Attributes within a set of aliases can be used interchangeably and are treated as equivalent. 
 Attribute aliases can be categorized as follows.
 
-1) Explicit Aliases: if two attributes in one annotation are declared as aliases for each other via @AliasFor, they are explicit aliases.
+1) Explicit Aliases: if two attributes in one annotation are declared as aliases for each other via @AliasFor, they are explicit aliases.  
+![Explict-Aliases](img/Explict-Aliases.png)
 2) Implicit Aliases: if two or more attributes in one annotation are declared as explicit overrides for the 
-same attribute in a meta-annotation via @AliasFor, they are implicit aliases.
+same attribute in a meta-annotation via @AliasFor, they are implicit aliases.  
+![Implicit-Aliases](img/Implicit-Aliases.jpg)
 3) Transitive Implicit Aliases: given two or more attributes in one annotation that are declared as explicit overrides 
 for attributes in meta-annotations via @AliasFor, if the attributes effectively override the same attribute 
-in a meta-annotation following the law of transitivity, they are transitive implicit aliases.
+in a meta-annotation following the law of transitivity, they are transitive implicit aliases.  
+![Transitive-Implicit-Aliases](img/Transitive-Implicit-Aliases.jpg)
 
 An **attribute override** is an annotation attribute that overrides (or shadows) an annotation attribute in a meta-annotation. 
 Attribute overrides can be categorized as follows.
 
 1) Implicit Overrides: given attribute A in annotation @One and attribute A in annotation @Two, if @One is 
 meta-annotated with @Two, then attribute A in annotation @One is an implicit override for attribute A in annotation 
-@Two based solely on a naming convention (i.e., both attributes are named A).
+@Two based solely on a naming convention (i.e., both attributes are named A).  
+![Implicit-Overrides](img/Implicit-Overrides.jpg)
+
 2) Explicit Overrides: if attribute A is declared as an alias for attribute B in a meta-annotation via @AliasFor, 
-then A is an explicit override for B.
+then A is an explicit override for B.  
+![Explicit-Overrides](img/Explicit-Overrides.jpg)
+
 3) Transitive Explicit Overrides: if attribute A in annotation @One is an explicit override for attribute B in 
 annotation @Two and B is an explicit override for attribute C in annotation @Three, then A is a transitive explicit 
-override for C following the law of transitivity.
+override for C following the law of transitivity.  
+![Transitive-Explicit-Override](img/Transitive-Explicit-Override.jpg)
 
 属性别名，有 3 种， 分别是 显式别名，隐式别名 和 传递隐式别名, 「属性别名」 只能发生在同一个注解内部。比如：  
 
