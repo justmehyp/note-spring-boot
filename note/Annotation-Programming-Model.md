@@ -321,5 +321,8 @@ Spring 对于注解编程模型的代码实现，主要在 AnnotatedElementUtils
 }
 ```
 
+可以发现，Spring 注解：@Repository、@Service、@Controller、@Configuration 等 @Component 的'派生'注解, value 属性都用了 
+@AliasFor(annotation = Component.class)，从侧面反映出 value 不支持隐式覆盖，否则 Spring 官方也不会多此一举。  
+
 本文讨论所涉及的 Spring Boot 版本 >= 2.0.2.RELEASE。
  
